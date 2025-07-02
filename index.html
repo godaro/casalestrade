@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Casa Lestrade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 text-gray-800 p-4">
+    <div class="max-w-7xl mx-auto">
+      <h1 class="text-2xl font-bold mb-4">Casa Lestrade</h1>
+
+      <div class="flex flex-col md:flex-row md:items-end gap-4 mb-6">
+        <div>
+          <label for="filtroAnio" class="block font-medium">Año</label>
+          <select
+            id="filtroAnio"
+            class="w-full md:w-40 border border-gray-300 rounded p-2"
+          >
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label for="filtroMes" class="block font-medium">Mes</label>
+          <select
+            id="filtroMes"
+            class="w-full md:w-40 border border-gray-300 rounded p-2"
+          >
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div>
+          <label for="filtroRegistro" class="block font-medium">Registro</label>
+          <select
+            id="filtroRegistro"
+            class="w-full md:w-40 border border-gray-300 rounded p-2"
+          >
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div class="flex-1">
+          <label for="busquedaApellido" class="block font-medium"
+            >Buscar por Apellido</label
+          >
+          <input
+            type="text"
+            id="busquedaApellido"
+            placeholder="Ej: Fernández"
+            class="w-full border border-gray-300 rounded p-2"
+          />
+        </div>
+        <div class="mt-1">
+          <button
+            id="descargarPDF"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded"
+          >
+            Descargar PDF
+          </button>
+        </div>
+      </div>
+
+      <div class="text-sm text-gray-600 mb-2">
+        <span id="contador">0 resultados</span>
+      </div>
+
+      <div class="overflow-auto border rounded shadow-sm">
+        <table class="min-w-full table-auto bg-white">
+          <thead
+            class="bg-gray-100 text-left text-sm font-semibold text-gray-700"
+          >
+            <tr id="theadRow"></tr>
+          </thead>
+          <tbody id="tbody" class="text-sm divide-y divide-gray-200"></tbody>
+        </table>
+      </div>
+    </div>
+    <script>
+      const urlCSV =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vR8-MQoQ38dDez4OYCdF_-sZh68hEBj4NeaqMVuQdI_gW9vkN_jzt5qTUeVyx7Hqn0LCmzBtn0Idd1z/pub?gid=0&single=true&output=csv";
+
+      const filtroAnio = document.getElementById("filtroAnio");
+      const filtroMes = document.getElementById("filtroMes");
+      const filtroRegistro = document.getElementById("filtroRegistro");
+      const busquedaApellido = document.getElementById("busquedaApellido");
+      const descargarPDF = document.getElementById("descargarPDF");
+      const contador = document.getElementById("contador");
+      const theadRow = document.getElementById("theadRow");
+      const tbody = document.getElementById("tbody");
+
+      let datosOriginales = [];
+      let cabeceras = [];
+      let indiceFecha = -1;
+      let indiceRegistro = -1;
+      let indiceApellido = -1;
+
+      const limpiar = (texto) => texto.replace(/['"]+/g, "").trim();
+
+      function extraerAnio(fechaStr) {
+        const limpio = limpiar(fechaStr);
+        if (limpio.includes("/")) {
+          const partes = limpio.split("/");
+          return partes.length === 3 ? partes[2] : "";
+        } else if (limpio.includes("-")) {
+          const partes = limpio.split("-");
+          return partes[0];
+        }
+        return "";
+      }
+
+      function nombreMes(numero) {
+        const num = parseInt(numero, 10);
+        const nombres = [
+          "",
+          "Enero",
+          "Febrero",
+          "Marzo",
+          "Abril",
+          "Mayo",
+          "Junio",
+          "Julio",
+          "Agosto",
+          "Septiembre",
+          "Octubre",
+          "Noviembre",
+          "Diciembre",
+        ];
+        return num >= 1 && num <= 12 ? nombres[num] : "";
+      }
+
+      function extraerMes(fechaStr) {
+        const limpio = limpiar(fechaStr);
+        if (!limpio.includes("/")) return "";
+        const partes = limpio.split("/");
+        if (partes.length < 2) return "";
+        const mes = parseInt(partes[1], 10); // convierte a número para evitar strings raros
+        return mes >= 1 && mes <= 12 ? String(mes).padStart(2, "0") : "";
+      }
+
+      function renderBody(data) {
+        tbody.innerHTML = data
+          .map(
+            (row) => `
+    <tr class="hover:bg-gray-50">
+      ${row
+        .map(
+          (celda) => `<td class="p-2 whitespace-nowrap">${limpiar(celda)}</td>`
+        )
+        .join("")}
+    </tr>
+  `
+          )
+          .join("");
+        contador.textContent = `${data.length} resultado${
+          data.length !== 1 ? "s" : ""
+        }`;
+      }
+
+      function aplicarFiltros() {
+        const anio = filtroAnio.value;
+        const mes = filtroMes.value;
+        const registro = filtroRegistro.value;
+        const textoApellido = limpiar(busquedaApellido.value).toLowerCase();
+
+        const filtrados = datosOriginales.filter((row) => {
+          const anioRow = extraerAnio(row[indiceFecha]);
+          const mesRow = extraerMes(row[indiceFecha]);
+          const registroRow = limpiar(row[indiceRegistro]);
+          const apellidoRow = limpiar(row[indiceApellido]).toLowerCase();
+
+          return (
+            (anio === "" || anio === anioRow) &&
+            (mes === "" || mes === mesRow) &&
+            (registro === "" || registro === registroRow) &&
+            (textoApellido === "" || apellidoRow.includes(textoApellido))
+          );
+        });
+
+        renderBody(filtrados);
+      }
+
+      function cargarFiltros(datos) {
+        const anios = [
+          ...new Set(datos.map((row) => extraerAnio(row[indiceFecha]))),
+        ]
+          .filter(Boolean)
+          .sort();
+        const meses = [
+          ...new Set(datos.map((row) => extraerMes(row[indiceFecha]))),
+        ]
+          .filter(Boolean)
+          .sort();
+        const registros = [
+          ...new Set(datos.map((row) => limpiar(row[indiceRegistro]))),
+        ]
+          .filter(Boolean)
+          .sort();
+
+        filtroAnio.innerHTML =
+          `<option value="">Todos</option>` +
+          anios.map((a) => `<option value="${a}">${a}</option>`).join("");
+        filtroMes.innerHTML =
+          `<option value="">Todos</option>` +
+          meses
+            .map((m) => `<option value="${m}">${nombreMes(m)}</option>`)
+            .join("");
+        filtroRegistro.innerHTML =
+          `<option value="">Todos</option>` +
+          registros.map((r) => `<option value="${r}">${r}</option>`).join("");
+      }
+
+      function exportarPDF() {
+        const filas = [...tbody.querySelectorAll("tr")].map((tr) =>
+          [...tr.querySelectorAll("td")].map((td) => td.textContent)
+        );
+
+        if (filas.length === 0) {
+          alert("No hay datos para exportar.");
+          return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.autoTable({
+          head: [cabeceras],
+          body: filas,
+          styles: { fontSize: 9 },
+          margin: { top: 20 },
+          headStyles: { fillColor: [30, 64, 175] }, // azul tailwind
+        });
+        doc.save("usuarios_filtrados.pdf");
+      }
+
+      fetch(urlCSV)
+        .then((res) => res.text())
+        .then((csv) => {
+          const filas = csv
+            .trim()
+            .split("\n")
+            .map((f) => f.split(",").map(limpiar));
+          cabeceras = filas[0];
+          datosOriginales = filas.slice(1);
+
+          indiceFecha = cabeceras.findIndex((c) => c.toLowerCase() === "fecha");
+          indiceRegistro = cabeceras.findIndex(
+            (c) => c.toLowerCase() === "registro"
+          );
+          indiceApellido = cabeceras.findIndex(
+            (c) => c.toLowerCase() === "apellido"
+          );
+
+          if (
+            indiceFecha === -1 ||
+            indiceRegistro === -1 ||
+            indiceApellido === -1
+          ) {
+            alert(
+              "Las columnas 'Fecha', 'Registro' o 'Apellido' no fueron encontradas."
+            );
+            return;
+          }
+
+          theadRow.innerHTML = cabeceras
+            .map((c) => `<th class="p-2">${c}</th>`)
+            .join("");
+
+          cargarFiltros(datosOriginales);
+          renderBody(datosOriginales);
+
+          filtroAnio.addEventListener("change", aplicarFiltros);
+          filtroMes.addEventListener("change", aplicarFiltros);
+          filtroRegistro.addEventListener("change", aplicarFiltros);
+          busquedaApellido.addEventListener("input", aplicarFiltros);
+          descargarPDF.addEventListener("click", exportarPDF);
+        })
+        .catch((err) => {
+          console.error("Error cargando CSV:", err);
+          tbody.innerHTML = `<tr><td colspan="99" class="p-2 text-red-600">Error al cargar datos</td></tr>`;
+        });
+    </script>
+  </body>
+</html>
