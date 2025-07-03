@@ -24,41 +24,56 @@
             <option value="">Todos</option>
           </select>
         </div>
-        <div>
-          <label for="filtroMes" class="block font-medium">Mes</label>
-          <select
-            id="filtroMes"
-            class="w-full md:w-40 border border-gray-300 rounded p-2"
-          >
-            <option value="">Todos</option>
-          </select>
+
+        <!-- Filtros colapsables: ocultos en mobile -->
+        <div
+          id="filtrosExtra"
+          class="hidden md:flex flex-wrap gap-4 w-full mt-0 md:mt-0"
+        >
+          <div>
+            <label for="filtroMes" class="block font-medium">Mes</label>
+            <select
+              id="filtroMes"
+              class="w-full md:w-40 border border-gray-300 rounded p-2"
+            >
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="">
+            <label for="filtroRegistro" class="block font-medium"
+              >Registro</label
+            >
+            <select
+              id="filtroRegistro"
+              class="w-full md:w-40 border border-gray-300 rounded p-2"
+            >
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div class="flex-1">
+            <label for="busquedaApellido" class="block font-medium"
+              >Apellido</label
+            >
+            <input
+              type="text"
+              id="busquedaApellido"
+              placeholder="Ej: Fernández"
+              class="w-full border border-gray-300 rounded p-2"
+            />
+          </div>
         </div>
-        <div>
-          <label for="filtroRegistro" class="block font-medium">Registro</label>
-          <select
-            id="filtroRegistro"
-            class="w-full md:w-40 border border-gray-300 rounded p-2"
-          >
-            <option value="">Todos</option>
-          </select>
-        </div>
-        <div class="flex-1">
-          <label for="busquedaApellido" class="block font-medium"
-            >Buscar por Apellido</label
-          >
-          <input
-            type="text"
-            id="busquedaApellido"
-            placeholder="Ej: Fernández"
-            class="w-full border border-gray-300 rounded p-2"
-          />
-        </div>
-        <div class="mt-1">
+        <div class="mt-1 flex flex-row justify-between md:items-end gap-4">
           <button
             id="descargarPDF"
-            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded"
+            class="bg-blue-600 hover:bg-blue-700 whitespace-nowrap text-white font-semibold px-4 py-2 rounded"
           >
-            Descargar PDF
+            <span class="md:hidden lg:inline-flex">Descargar</span> PDF
+          </button>
+          <button
+            id="toggleFiltros"
+            class="block md:hidden bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium text-gray-700"
+          >
+            Más filtros
           </button>
         </div>
       </div>
@@ -90,6 +105,8 @@
       const contador = document.getElementById("contador");
       const theadRow = document.getElementById("theadRow");
       const tbody = document.getElementById("tbody");
+      const toggleBtn = document.getElementById("toggleFiltros");
+      const filtrosExtra = document.getElementById("filtrosExtra");
 
       let datosOriginales = [];
       let cabeceras = [];
@@ -98,6 +115,12 @@
       let indiceApellido = -1;
 
       const limpiar = (texto) => texto.replace(/['"]+/g, "").trim();
+
+      toggleBtn.addEventListener("click", () => {
+        const visible = !filtrosExtra.classList.contains("hidden");
+        filtrosExtra.classList.toggle("hidden", visible);
+        toggleBtn.textContent = visible ? "Más filtros" : "Menos filtros";
+      });
 
       function extraerAnio(fechaStr) {
         const limpio = limpiar(fechaStr);
@@ -154,9 +177,24 @@
   `
           )
           .join("");
-        contador.textContent = `${data.length} resultado${
-          data.length !== 1 ? "s" : ""
-        }`;
+
+        // Filtros seleccionados
+        const anio = filtroAnio.value;
+        const mes = filtroMes.value;
+        const registro = filtroRegistro.value;
+
+        let texto = `${data.length} resultado${data.length !== 1 ? "s" : ""}`;
+
+        const partes = [];
+        if (anio) partes.push(`Año: ${anio}`);
+        if (mes) partes.push(`Mes: ${nombreMes(mes)}`);
+        if (registro) partes.push(`Registro: ${registro}`);
+
+        if (partes.length > 0) {
+          texto += ` para ${partes.join(", ")}`;
+        }
+
+        contador.textContent = texto;
       }
 
       function aplicarFiltros() {
