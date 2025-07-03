@@ -260,16 +260,32 @@
           return;
         }
 
+        const titulo = document.querySelector("h1")?.textContent || "Reporte";
+        const resumen = document.getElementById("contador")?.textContent || "";
+
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+
+        // Agregar título
+        doc.setFontSize(14);
+        doc.text(titulo, 14, 20);
+
+        // Agregar contador/resumen debajo
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(resumen, 14, 28);
+
+        // Agregar tabla
         doc.autoTable({
+          startY: 32,
           head: [cabeceras],
           body: filas,
           styles: { fontSize: 9 },
-          margin: { top: 20 },
-          headStyles: { fillColor: [30, 64, 175] }, // azul tailwind
+          headStyles: { fillColor: [30, 64, 175], textColor: 255 }, // azul Tailwind
+          margin: { left: 14, right: 14 },
         });
-        doc.save("usuarios_filtrados.pdf");
+
+        doc.save("casalestrade_resultados.pdf");
       }
 
       fetch(urlCSV)
