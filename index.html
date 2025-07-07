@@ -9,89 +9,98 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   </head>
-  <body class="bg-gray-50 text-gray-800 p-4">
-    <div class="max-w-7xl mx-auto">
-      <h1 class="text-3xl font-bold mb-4">Casa Lestrade</h1>
+  <body class="bg-gray-50 text-gray-800">
+    <header class="h-[15rem] md:h-[12rem] z-1">
+      <div class="fixed bg-gray-50 w-full">
+        <div class="max-w-7xl mx-auto p-2">
+          <h1 class="text-3xl font-bold mb-4"><a href="/">Casa Lestrade</a></h1>
 
-      <div class="flex flex-col md:flex-row md:items-end gap-4 mb-6">
-        <div>
-          <label for="filtroAnio" class="block font-medium">Año</label>
-          <select
-            id="filtroAnio"
-            class="w-full md:w-40 border border-gray-300 rounded p-2"
-          >
-            <option value="">Todos</option>
-          </select>
-        </div>
+          <div class="flex flex-col md:flex-row md:items-end gap-4 mb-6">
+            <div>
+              <label for="filtroAnio" class="block font-medium">Año</label>
+              <select
+                id="filtroAnio"
+                class="w-full md:w-40 border border-gray-300 rounded p-2"
+              >
+                <option value="">Todos</option>
+              </select>
+            </div>
 
-        <!-- Filtros colapsables: ocultos en mobile -->
-        <div
-          id="filtrosExtra"
-          class="hidden md:flex flex-wrap gap-4 w-full mt-0 md:mt-0"
-        >
-          <div>
-            <label for="filtroMes" class="block font-medium">Mes</label>
-            <select
-              id="filtroMes"
-              class="w-full md:w-40 border border-gray-300 rounded p-2"
+            <!-- Filtros colapsables: ocultos en mobile -->
+            <div
+              id="filtrosExtra"
+              class="hidden md:flex flex-wrap gap-4 w-full mt-0 md:mt-0"
             >
-              <option value="">Todos</option>
-            </select>
+              <div>
+                <label for="filtroMes" class="block font-medium">Mes</label>
+                <select
+                  id="filtroMes"
+                  class="w-full md:w-40 border border-gray-300 rounded p-2"
+                >
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div class="">
+                <label for="filtroRegistro" class="block font-medium"
+                  >Registro</label
+                >
+                <select
+                  id="filtroRegistro"
+                  class="w-full md:w-40 border border-gray-300 rounded p-2"
+                >
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div class="flex-1">
+                <label for="busquedaApellido" class="block font-medium"
+                  >Apellido</label
+                >
+                <input
+                  type="text"
+                  id="busquedaApellido"
+                  placeholder="Ej: Fernández"
+                  class="w-full border border-gray-300 rounded p-2"
+                />
+              </div>
+            </div>
+            <div class="mt-1 flex flex-row justify-between md:items-end gap-4">
+              <button
+                id="descargarPDF"
+                class="bg-blue-600 hover:bg-blue-700 whitespace-nowrap text-white font-semibold px-4 py-2 rounded"
+              >
+                <span class="md:hidden lg:inline-flex">Descargar</span> PDF
+              </button>
+              <button
+                id="toggleFiltros"
+                class="block md:hidden bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium text-gray-700"
+              >
+                Más filtros
+              </button>
+            </div>
           </div>
-          <div class="">
-            <label for="filtroRegistro" class="block font-medium"
-              >Registro</label
-            >
-            <select
-              id="filtroRegistro"
-              class="w-full md:w-40 border border-gray-300 rounded p-2"
-            >
-              <option value="">Todos</option>
-            </select>
+          <div class="text-sm text-gray-600 mb-2">
+            <span id="contador">0 resultados</span>
           </div>
-          <div class="flex-1">
-            <label for="busquedaApellido" class="block font-medium"
-              >Apellido</label
-            >
-            <input
-              type="text"
-              id="busquedaApellido"
-              placeholder="Ej: Fernández"
-              class="w-full border border-gray-300 rounded p-2"
-            />
-          </div>
-        </div>
-        <div class="mt-1 flex flex-row justify-between md:items-end gap-4">
-          <button
-            id="descargarPDF"
-            class="bg-blue-600 hover:bg-blue-700 whitespace-nowrap text-white font-semibold px-4 py-2 rounded"
-          >
-            <span class="md:hidden lg:inline-flex">Descargar</span> PDF
-          </button>
-          <button
-            id="toggleFiltros"
-            class="block md:hidden bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium text-gray-700"
-          >
-            Más filtros
-          </button>
         </div>
       </div>
-
-      <div class="text-sm text-gray-600 mb-2">
-        <span id="contador">0 resultados</span>
+    </header>
+    <main>
+      <div class="max-w-7xl mx-auto p-2">
+        <div class="overflow-auto border rounded shadow-sm">
+          <table class="min-w-full table-auto bg-white">
+            <thead
+              class="bg-gray-100 text-left text-sm font-semibold text-gray-700"
+            >
+              <tr id="theadRow"></tr>
+            </thead>
+            <tbody id="tbody" class="text-sm divide-y divide-gray-200"></tbody>
+          </table>
+        </div>
       </div>
-
-      <div class="overflow-auto border rounded shadow-sm">
-        <table class="min-w-full table-auto bg-white">
-          <thead
-            class="bg-gray-100 text-left text-sm font-semibold text-gray-700"
-          >
-            <tr id="theadRow"></tr>
-          </thead>
-          <tbody id="tbody" class="text-sm divide-y divide-gray-200"></tbody>
-        </table>
-      </div>
-    </div>
+    </main>
+    <footer class="h-[1rem] text-gray-400">
+      <div class="max-w-7xl mx-auto p-2">Copyright © 2025 Casa Lestrade</div>
+    </footer>
     <script>
       const urlCSV =
         "https://docs.google.com/spreadsheets/d/e/2PACX-1vR8-MQoQ38dDez4OYCdF_-sZh68hEBj4NeaqMVuQdI_gW9vkN_jzt5qTUeVyx7Hqn0LCmzBtn0Idd1z/pub?gid=0&single=true&output=csv";
