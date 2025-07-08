@@ -27,52 +27,53 @@
             </div>
 
             <!-- Filtros colapsables: ocultos en mobile -->
-            <div
-              id="filtrosExtra"
-              class="hidden md:flex flex-wrap gap-4 w-full mt-0 md:mt-0"
-            >
-              <div>
-                <label for="filtroMes" class="block font-medium">Mes</label>
-                <select
-                  id="filtroMes"
-                  class="w-full md:w-40 border border-gray-300 rounded p-2"
-                >
-                  <option value="">Todos</option>
-                </select>
-              </div>
-              <div class="">
-                <label for="filtroRegistro" class="block font-medium"
-                  >Registro</label
-                >
-                <select
-                  id="filtroRegistro"
-                  class="w-full md:w-40 border border-gray-300 rounded p-2"
-                >
-                  <option value="">Todos</option>
-                </select>
-              </div>
-              <div class="flex-1">
-                <label for="busquedaApellido" class="block font-medium"
-                  >Apellido</label
-                >
-                <input
-                  type="text"
-                  id="busquedaApellido"
-                  placeholder="Ej: Fernández"
-                  class="w-full border border-gray-300 rounded p-2"
-                />
+            <div id="filtrosExtra" class="hidden md:flex w-full">
+              <div
+                class="flex flex-col md:flex-row flex-wrap gap-4 w-full mt-0 md:mt-0 md:items-end"
+              >
+                <div>
+                  <label for="filtroMes" class="block font-medium">Mes</label>
+                  <select
+                    id="filtroMes"
+                    class="w-full md:w-40 border border-gray-300 rounded p-2"
+                  >
+                    <option value="">Todos</option>
+                  </select>
+                </div>
+                <div class="">
+                  <label for="filtroRegistro" class="block font-medium"
+                    >Registro</label
+                  >
+                  <select
+                    id="filtroRegistro"
+                    class="w-full md:w-40 border border-gray-300 rounded p-2"
+                  >
+                    <option value="">Todos</option>
+                  </select>
+                </div>
+                <div class="flex-1">
+                  <label for="busquedaApellido" class="block font-medium"
+                    >Apellido</label
+                  >
+                  <input
+                    type="text"
+                    id="busquedaApellido"
+                    placeholder="Ej: Fernández"
+                    class="w-full border border-gray-300 rounded p-2 max-h-[39px]"
+                  />
+                </div>
               </div>
             </div>
             <div class="mt-1 flex flex-row justify-between md:items-end gap-4">
               <button
                 id="descargarPDF"
-                class="bg-blue-600 hover:bg-blue-700 whitespace-nowrap text-white font-semibold px-4 py-2 rounded"
+                class="bg-blue-600 hover:bg-blue-700 whitespace-nowrap text-white font-semibold px-4 py-2 rounded max-h-[39px]"
               >
                 <span class="md:hidden lg:inline-flex">Descargar</span> PDF
               </button>
               <button
                 id="toggleFiltros"
-                class="block md:hidden bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium text-gray-700"
+                class="block md:hidden bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm font-medium text-gray-700 max-h-[39px]"
               >
                 Más filtros
               </button>
@@ -98,7 +99,7 @@
         </div>
       </div>
     </main>
-    <footer class="h-[1rem] text-gray-400">
+    <footer class="h-[1rem] text-gray-400 text-sm">
       <div class="max-w-7xl mx-auto p-2">Copyright © 2025 Casa Lestrade</div>
     </footer>
     <script>
